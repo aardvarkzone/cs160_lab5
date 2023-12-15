@@ -302,6 +302,10 @@ class Codegen : public Visitor
 
     void visitCall(Call* p)
     {
+        list<Expr_ptr>::iterator it;
+        for (it = p->m_expr_list->begin(); it != p->m_expr_list->end(); ++it) {
+            (*it)->accept(this);
+        }
         cout << "    #visit Call" << endl;
         // p->visit_children(this); 
 
