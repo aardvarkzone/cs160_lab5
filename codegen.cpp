@@ -175,6 +175,7 @@ class Codegen : public Visitor
         m_st = st;
         label_count = 0;
         // size_of_locals = 0;
+        // cout << ".text\n" << endl;
         cout << ".global Main" << endl;
     }
 
@@ -292,6 +293,7 @@ class Codegen : public Visitor
 
     void visitCall(Call* p)
     {
+        cout << "#call" << endl;
         p->visit_children(this);
         cout << "    call " << p->m_symname->mangled_spelling() << endl;
 
@@ -300,6 +302,7 @@ class Codegen : public Visitor
             cout << "    popl  %ebx" << endl; 
             cout << "    movl  %eax, (%ebx)" << endl; 
         }
+        cout << "#endcall" << endl;
     }
 
     void visitReturn(Return* p)
@@ -668,13 +671,24 @@ class Codegen : public Visitor
     // LHS
 
 
+    // void visitVariable(Variable* p) {
+    //     const char* varName = p->m_symname->spelling();
+    //     Symbol* sym = m_st->lookup(p->m_attribute.m_scope, varName);
+
+    //     if (sym != NULL) {
+    //         int offset = sym->get_offset();
+    //         cout << "    leal -" << offset << "(%ebp), %eax" << endl;
+    //         cout << "    pushl %eax" << endl;
+    //     }
+    // }
     void visitVariable(Variable* p) {
         const char* varName = p->m_symname->spelling();
         Symbol* sym = m_st->lookup(p->m_attribute.m_scope, varName);
 
         if (sym != NULL) {
             int offset = sym->get_offset();
-            cout << "    leal -" << offset << "(%ebp), %eax" << endl;
+            // Push the value of the variable onto the stack
+            cout << "    movl -" << offset << "(%ebp), %eax" << endl;
             cout << "    pushl %eax" << endl;
         }
     }
