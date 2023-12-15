@@ -1,0 +1,10 @@
+procedure Main() return char { 
+	var x: char;
+    var j: integer;
+    var y: integer; 
+    j = 45;
+    y = -1; 
+    x = 'c';
+
+	return x; 
+}
