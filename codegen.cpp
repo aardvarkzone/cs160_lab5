@@ -292,9 +292,9 @@ class Codegen : public Visitor
         // cout << "    # pop val" << endl;
         // cout << "    movl %eax, (%ebx)" << endl;
         // cout << "    # assign" << endl;
-        cout << "    popl %eax" << endl;
-        cout << "    popl %ebx" << endl;
-        cout << "    negl %eax" << endl;
+        cout << "    popl %eax #offset" << endl;
+        cout << "    popl %ebx #value" << endl;
+        cout << "    negl %eax #offset" << endl;
         cout << "    movl %ebx, (%ebp, %eax)" << endl;
         cout << "    # assign" << endl;
     }
@@ -303,14 +303,16 @@ class Codegen : public Visitor
     void visitCall(Call* p)
     {
         cout << "    #visit Call" << endl;
-        p->visit_children(this); 
+        // p->visit_children(this); 
 
         cout << "    call " << p->m_symname->spelling() << endl;
-
+        cout << "    pushl  %eax" << endl; 
         if (p->m_lhs) {
             p->m_lhs->accept(this);  
             cout << "    popl  %ebx" << endl; 
-            cout << "    movl  %eax, (%ebx)" << endl; 
+            cout << "    popl  %eax" << endl; 
+            cout << "    negl  %ebx" << endl;
+            cout << "    movl  %eax, (%ebp, %ebx)" << endl; 
         }
     }
 
@@ -671,12 +673,13 @@ class Codegen : public Visitor
 
     void visitIntLit(IntLit* p)
     {
+        cout << "    #visit IntLit" << endl;
         cout << "    pushl $" << p->m_primitive->m_data << "\n";
     }
 
     void visitNullLit(NullLit* p)
     {
-        cout << "    #visitNullLit" << endl;
+        cout << "    #visit NullLit" << endl;
         cout << "    pushl $0" << endl;
     }
 
@@ -728,7 +731,7 @@ class Codegen : public Visitor
         if(p->m_attribute.m_basetype != bt_string) {
             p->visit_children(this);        
             int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
-            cout << "    pushl $" << offset << endl; 
+            cout << "    pushl $" << offset << " #offset from visitVar" << endl; 
         }
     }
 

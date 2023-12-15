@@ -5,8 +5,7 @@ foo:
     movl  %esp, %ebp
     subl  $0, %esp
     # visit Return
-    #visit IntLit
-    pushl $2
+    pushl $1
     popl  %eax
     leave
     # Epilogue
@@ -15,17 +14,20 @@ foo:
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $4, %esp
+    subl  $8, %esp
+    # visit VariableDecl
     # visit VariableDecl
     #visit Call
-    call foo
-    pushl  %eax
     #visit Variable
-    pushl $4 #offset from visitVar
+    # offset from %ebp to get the variable x in memory
+    # assign what is in $eax to x
+    pushl $8 # <--- wrong, only if 8 is a parameter
+    call foo
+    #visit Variable
+    pushl $8 #  <-- 
     popl  %ebx
-    popl  %eax
-    negl  %ebx
-    movl  %eax, (%ebp, %ebx)
+    movl  %ebx, -4(%ebp)
+
     # visit Return
     pushl $97
     popl  %eax

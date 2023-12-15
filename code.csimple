@@ -1,11 +1,12 @@
 
-
 procedure foo() return integer { 
-    return 1;
+	return 2; 
 }
 
+
+
+
 procedure Main() return char { 
-    var z : intptr;
     var x : integer;
     x = foo();
 	return 'a'; 
