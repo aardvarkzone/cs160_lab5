@@ -284,31 +284,58 @@ class Codegen : public Visitor
         cout << "    #visitAssignment\n";
         p->m_expr->accept(this);
         p->m_lhs->accept(this);
-        cout << "    popl %ebx" << endl;
-        cout << "    # pop var" << endl;
+        // cout << "    popl %ebx" << endl;
+        // cout << "    # pop var" << endl;
+        // cout << "    popl %eax" << endl;
+        // cout << "    # pop val" << endl;
+        // cout << "    movl %eax, (%ebx)" << endl;
+        // cout << "    # assign" << endl;
         cout << "    popl %eax" << endl;
-        cout << "    # pop val" << endl;
-        cout << "    movl %eax, (%ebx)" << endl;
+        cout << "    popl %ebx" << endl;
+        cout << "    negl %eax" << endl;
+        cout << "    movl %ebx, (%ebp, %eax)" << endl;
         cout << "    # assign" << endl;
-        // cout << "    negl %eax" << endl;
-        // cout << "    movl %eax, (%ebp, %eax)" << endl;
     }
 
+    // void visitAssignment(Assignment* p)
+    // {
+    //     cout << "    #visitAssignment\n";
+    //     p->m_expr->accept(this); // Evaluate RHS and push result on stack
+    //     p->m_lhs->accept(this);  // Evaluate LHS to get the storage address and push on stack
+    //     cout << "    popl %ebx" << endl; // Pop the address into %ebx
+    //     cout << "    popl %eax" << endl; // Pop the value into %eax
+    //     cout << "    movl %eax, (%ebx)" << endl; // Store the value at the address
+    // }
+
+    // void visitCall(Call* p)
+    // {
+    //     cout << "#call" << endl;
+    //     p->visit_children(this);
+    //     cout << "    call " << p->m_symname->mangled_spelling() << endl;
+
+    //     if (p->m_lhs) {
+    //         // p->m_lhs->accept(this);  
+    //         cout << "    popl  %ebx" << endl; 
+    //         cout << "    movl  %eax, (%ebx)" << endl; 
+    //     }
+    //     cout << "#endcall" << endl;
+    // }
 
     void visitCall(Call* p)
     {
         cout << "#call" << endl;
-        p->visit_children(this);
-        cout << "    call " << p->m_symname->mangled_spelling() << endl;
+        p->visit_children(this); 
+
+        cout << "    call " << p->m_symname->spelling() << endl;
 
         if (p->m_lhs) {
-            // p->m_lhs->accept(this);  
+            p->m_lhs->accept(this);  
             cout << "    popl  %ebx" << endl; 
             cout << "    movl  %eax, (%ebx)" << endl; 
         }
         cout << "#endcall" << endl;
     }
-    
+
     void visitReturn(Return* p)
     {
         if (p->m_expr) {
@@ -656,20 +683,20 @@ class Codegen : public Visitor
 
     void visitArrayAccess(ArrayAccess* p)
     {
-        p->visit_children(this);
+        // p->visit_children(this);
 
-        cout << "    popl  %edx" << endl;  
+        // cout << "    popl  %edx" << endl;  
 
-        Symbol* sym = m_st->lookup(p->m_symname->spelling());
-        if (sym != NULL) {
-            int baseOffset = sym->get_offset();  
+        // Symbol* sym = m_st->lookup(p->m_symname->spelling());
+        // if (sym != NULL) {
+        //     int baseOffset = sym->get_offset();  
 
-            cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
-            cout << "    addl  %edx, %eax" << endl; 
-            cout << "    movl  (%eax), %eax" << endl;
+        //     cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
+        //     cout << "    addl  %edx, %eax" << endl; 
+        //     cout << "    movl  (%eax), %eax" << endl;
 
-            cout << "    pushl %eax" << endl;
-        }
+        //     cout << "    pushl %eax" << endl;
+        // }
     }
 
     // LHS
@@ -685,46 +712,56 @@ class Codegen : public Visitor
     //         cout << "    pushl %eax" << endl;
     //     }
     // }
-    void visitVariable(Variable* p) {
-        const char* varName = p->m_symname->spelling();
-        Symbol* sym = m_st->lookup(p->m_attribute.m_scope, varName);
+    // void visitVariable(Variable* p) {
+    //     const char* varName = p->m_symname->spelling();
+    //     Symbol* sym = m_st->lookup(p->m_attribute.m_scope, varName);
 
-        if (sym != NULL) {
-            int offset = sym->get_offset();
-            // Push the value of the variable onto the stack
-            cout << "    movl -" << offset << "(%ebp), %eax" << endl;
-            cout << "    pushl %eax" << endl;
+    //     if (sym != NULL) {
+    //         int offset = sym->get_offset();
+    //         cout << "    movl -" << offset << "(%ebp), %eax" << endl;
+    //         cout << "    pushl %eax" << endl;
+    //     }
+    // }
+
+    void visitVariable(Variable* p)
+    {
+        cout << "    visitVariable" << endl;
+        if(p->m_attribute.m_basetype != bt_string) {
+            p->visit_children(this);        
+            int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
+            cout << "    pushl $" << offset << endl; 
         }
     }
+
     
 
     void visitDerefVariable(DerefVariable* p)
     {
         p->visit_children(this);
-        int offset  = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
-        cout << "    popl %eax" << endl;
-        cout << "    movl -" << offset <<  "(%ebp), %ebx" << endl;  
+        // int offset  = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
+        // cout << "    popl %eax" << endl;
+        // cout << "    movl -" << offset <<  "(%ebp), %ebx" << endl;  
 
-        cout << "    movl %eax (%ebx)" << endl;   
+        // cout << "    movl %eax (%ebx)" << endl;   
     }
 
     void visitArrayElement(ArrayElement* p)
     {
         p->visit_children(this);
 
-        cout << "    popl  %edx" << endl;  
+        // cout << "    popl  %edx" << endl;  
 
-        Symbol* sym = m_st->lookup(p->m_symname->spelling());
-        if (sym != NULL) {
-            int baseOffset = sym->get_offset();  
+        // Symbol* sym = m_st->lookup(p->m_symname->spelling());
+        // if (sym != NULL) {
+        //     int baseOffset = sym->get_offset();  
 
-            cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
-            cout << "    addl  %edx, %eax" << endl;  
+        //     cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
+        //     cout << "    addl  %edx, %eax" << endl;  
 
-            cout << "    movl  (%eax), %eax" << endl;
+        //     cout << "    movl  (%eax), %eax" << endl;
 
-            cout << "    pushl %eax" << endl;
-        }
+        //     cout << "    pushl %eax" << endl;
+        // }
     }
 
     // Special cases
@@ -739,56 +776,56 @@ class Codegen : public Visitor
     // Strings
     void visitStringAssignment(StringAssignment* p)
     {
-        p->visit_children(this); 
+        // p->visit_children(this); 
         
-        cout << "    popl  %esi" << endl; 
-        cout << "    popl  %edi" << endl; 
+        // cout << "    popl  %esi" << endl; 
+        // cout << "    popl  %edi" << endl; 
         
-        cout << "    movl  $0, %ecx" << endl;  // loop count
-        cout << "string_copy_loop:" << endl;
-        cout << "    movb  (%esi, %ecx, 1), %al" << endl;  
-        cout << "    movb  %al, (%edi, %ecx, 1)" << endl;  
-        cout << "    incl  %ecx" << endl;                  
-        cout << "    testb %al, %al" << endl;             
-        cout << "    jne   string_copy_loop" << endl; 
+        // cout << "    movl  $0, %ecx" << endl;  // loop count
+        // cout << "string_copy_loop:" << endl;
+        // cout << "    movb  (%esi, %ecx, 1), %al" << endl;  
+        // cout << "    movb  %al, (%edi, %ecx, 1)" << endl;  
+        // cout << "    incl  %ecx" << endl;                  
+        // cout << "    testb %al, %al" << endl;             
+        // cout << "    jne   string_copy_loop" << endl; 
     }
 
     void visitStringPrimitive(StringPrimitive* p)
     {
-        cout << "    pushl $" << p->m_string << endl;
+        // cout << "    pushl $" << p->m_string << endl;
     }
 
     void visitAbsoluteValue(AbsoluteValue* p)
     {
-        int label_is_positive = new_label();
-        int label_end = new_label();
+        // int label_is_positive = new_label();
+        // int label_end = new_label();
 
         p->visit_children(this);
 
-        cout << "    popl  %eax" << endl;
+        // cout << "    popl  %eax" << endl;
 
-        cout << "    cmpl  $0, %eax" << endl;
-        cout << "    jge   label" << label_is_positive << endl;
+        // cout << "    cmpl  $0, %eax" << endl;
+        // cout << "    jge   label" << label_is_positive << endl;
 
-        cout << "    negl  %eax" << endl;
+        // cout << "    negl  %eax" << endl;
 
-        cout << "    jmp   label" << label_end << endl;
+        // cout << "    jmp   label" << label_end << endl;
 
-        cout << "label" << label_is_positive << ":" << endl;
+        // cout << "label" << label_is_positive << ":" << endl;
 
-        cout << "label" << label_end << ":" << endl;
+        // cout << "label" << label_end << ":" << endl;
 
-        cout << "    pushl %eax" << endl;
+        // cout << "    pushl %eax" << endl;
     }
 
     // Pointer
     void visitAddressOf(AddressOf* p)
     {  
         p->visit_children(this); 
-        cout << "    popl %eax" << endl;
-        cout << "    negl %eax" << endl;
-        cout << "    leal (%ebp, %eax, 1), %eax" << endl;
-        cout << "    popl %eax" << endl;
+        // cout << "    popl %eax" << endl;
+        // cout << "    negl %eax" << endl;
+        // cout << "    leal (%ebp, %eax, 1), %eax" << endl;
+        // cout << "    popl %eax" << endl;
 
     }
 
