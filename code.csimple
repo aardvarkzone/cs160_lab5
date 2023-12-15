@@ -1,10 +1,15 @@
-procedure Main() return char { 
-	var x: char;
+procedure foo() return integer { 
     var j: integer;
-    var y: integer; 
     j = 45;
-    y = -1; 
-    x = 'c';
-
-	return x; 
+	return j; 
 }
+
+
+procedure Main() return char { 
+    var j: integer;
+    j = foo();
+    if(j == 45) { j = 3; }
+    else { j = 4; }
+	return 'c'; 
+}
+

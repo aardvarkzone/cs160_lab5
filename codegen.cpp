@@ -280,8 +280,14 @@ class Codegen : public Visitor
 
     void visitAssignment(Assignment* p)
     {
+        cout << "    #visitAssignment\n";
         p->m_expr->accept(this);
         p->m_lhs->accept(this);
+        cout << "    popl %ebx" << endl;
+        cout << "    popl %eax" << endl;
+        cout << "    movl %eax, (%ebx)" << endl;
+        // cout << "    negl %eax" << endl;
+        // cout << "    movl %eax, (%ebp, %eax)" << endl;
     }
 
     void visitCall(Call* p)
@@ -326,15 +332,19 @@ class Codegen : public Visitor
         int label_else = new_label();
         int label_end = new_label();
 
-        p->visit_children(this); 
+        p->m_expr->accept(this); 
 
         cout << "    popl  %eax" << endl;
         cout << "    cmpl  $0, %eax" << endl;
-        cout << "    je    label" << label_else << endl;
-        cout << "    jmp   label" << label_end << endl;
 
+        cout << "    je    label" << label_else << endl; //f
+
+        p->m_nested_block_1->accept(this);
+
+        cout << "    jmp   label" << label_end << endl;
         cout << "label" << label_else << ":" << endl;
-        // need to finish nested blocks
+        p->m_nested_block_2->accept(this);
+
         cout << "label" << label_end << ":" << endl;
     }
 
@@ -346,16 +356,17 @@ class Codegen : public Visitor
 
         cout << "label" << label_start << ":" << endl;
 
-        p->visit_children(this); 
-
+        p->m_expr->accept(this); 
         cout << "    popl  %eax" << endl; 
         cout << "    cmpl  $0, %eax" << endl;
         cout << "    je    label" << label_end << endl;
 
+        p->m_nested_block->accept(this);
+
         cout << "    jmp   label" << label_start << endl;
-        // need to finish nested blocks
+
         cout << "label" << label_end << ":" << endl;
-    }
+        }
 
     void visitCodeBlock(CodeBlock *p) 
     {
@@ -607,10 +618,7 @@ class Codegen : public Visitor
     void visitIdent(Ident* p)
     {
         p->visit_children(this);
-        
         const char* identName = p->m_symname->spelling();
-        // SymScope* targetscope = p->m_attribute.m_scope;
-        // Symbol* sym = m_st->lookup(targetscope, identName);
         Symbol* sym = m_st->lookup(identName);
         if (sym != NULL) {
             int offset = sym->get_offset();
@@ -658,14 +666,16 @@ class Codegen : public Visitor
     }
 
     // LHS
+
+
     void visitVariable(Variable* p) {
         const char* varName = p->m_symname->spelling();
         Symbol* sym = m_st->lookup(p->m_attribute.m_scope, varName);
 
         if (sym != NULL) {
             int offset = sym->get_offset();
-            cout << "    leal -" << offset << "(%ebp), %eax" << endl;  
-            cout << "    pushl %eax" << endl;  
+            cout << "    leal -" << offset << "(%ebp), %eax" << endl;
+            cout << "    pushl %eax" << endl;
         }
     }
 
@@ -756,6 +766,10 @@ class Codegen : public Visitor
     void visitAddressOf(AddressOf* p)
     {  
         p->visit_children(this); 
+        cout << "    popl %eax" << endl;
+        cout << "    negl %eax" << endl;
+        cout << "    leal (%ebp, %eax, 1), %eax" << endl;
+        cout << "    popl %eax" << endl;
 
     }
 
