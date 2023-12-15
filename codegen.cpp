@@ -297,29 +297,6 @@ class Codegen : public Visitor
         cout << "    # assign" << endl;
     }
 
-    // void visitAssignment(Assignment* p)
-    // {
-    //     cout << "    #visitAssignment\n";
-    //     p->m_expr->accept(this); // Evaluate RHS and push result on stack
-    //     p->m_lhs->accept(this);  // Evaluate LHS to get the storage address and push on stack
-    //     cout << "    popl %ebx" << endl; // Pop the address into %ebx
-    //     cout << "    popl %eax" << endl; // Pop the value into %eax
-    //     cout << "    movl %eax, (%ebx)" << endl; // Store the value at the address
-    // }
-
-    // void visitCall(Call* p)
-    // {
-    //     cout << "#call" << endl;
-    //     p->visit_children(this);
-    //     cout << "    call " << p->m_symname->mangled_spelling() << endl;
-
-    //     if (p->m_lhs) {
-    //         // p->m_lhs->accept(this);  
-    //         cout << "    popl  %ebx" << endl; 
-    //         cout << "    movl  %eax, (%ebx)" << endl; 
-    //     }
-    //     cout << "#endcall" << endl;
-    // }
 
     void visitCall(Call* p)
     {
