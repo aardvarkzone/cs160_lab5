@@ -207,26 +207,26 @@ class Codegen : public Visitor
         }
         
         Procedure_blockImpl *procblockImpl = dynamic_cast<Procedure_blockImpl*>(p->m_procedure_block);
-        std::list<Decl_ptr>::iterator m_decl_list_iter;
+        std::list<Decl_ptr>::iterator it_2;
         int size = 0;
-        for(m_decl_list_iter = procblockImpl->m_decl_list->begin();
-            m_decl_list_iter != procblockImpl->m_decl_list->end();
-            ++m_decl_list_iter){
-                std::list<SymName_ptr>::iterator m_symname_list_iter;
-                DeclImpl *decl_impl = dynamic_cast<DeclImpl*>(*m_decl_list_iter);
-                 for(m_symname_list_iter = decl_impl->m_symname_list->begin();
+        for(it_2 = procblockImpl->m_decl_list->begin();
+            it_2 != procblockImpl->m_decl_list->end();
+            ++it_2){
+                DeclImpl *decl_impl = dynamic_cast<DeclImpl*>(*it_2);
+                list<SymName_ptr>::iterator m_symname_list_iter;
+
+                for(m_symname_list_iter = decl_impl->m_symname_list->begin();
                         m_symname_list_iter != decl_impl->m_symname_list->end();
                         ++m_symname_list_iter)
-                        {
-                            SymName *name = dynamic_cast<SymName*>(*m_symname_list_iter);
-                            if (m_st->lookup(p->m_attribute.m_scope, name->spelling())->get_size() == 1) {
-                                size += 4;
-                            } else if (m_st->lookup(p->m_attribute.m_scope, name->spelling())->get_size() == 4) {
-                                size += 4;
-                            } else {
-                                size += m_st->lookup(p->m_attribute.m_scope, name->spelling())->get_size();
-                            }
+                    {
+                        SymName *s = dynamic_cast<SymName*>(*m_symname_list_iter);
+                        if (m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size() == 4 || 
+                             m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size() == 1) {
+                            size += 4;
+                        } else {
+                            size += m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size();
                         }
+                    }
         }
         size_of_locals += size;
         int num_args = m_st->lookup(p->m_symname->spelling())->m_arg_type.size(); 
