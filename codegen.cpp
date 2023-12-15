@@ -133,6 +133,7 @@ class Codegen : public Visitor
 
     void emit_prologue(SymName *name, unsigned int size_locals, unsigned int num_args)
     {
+        cout << "    # Prologue" << endl;
         cout << name->spelling() << ":" << endl;
         cout << "    pushl %ebp" << endl;
         cout << "    movl  %esp, %ebp" << endl;
@@ -150,6 +151,7 @@ class Codegen : public Visitor
 
     void emit_epilogue()
     {
+        cout << "    # Epilogue" << endl;
         // cout << "    movl  %ebp, %esp" << endl;
         // cout << "    popl  %ebp" << endl;
         
@@ -176,7 +178,7 @@ class Codegen : public Visitor
         label_count = 0;
         // size_of_locals = 0;
         // cout << ".text\n" << endl;
-        cout << ".global Main" << endl;
+        cout << ".globl Main" << endl;
     }
 
     void visitProgramImpl(ProgramImpl* p)
@@ -281,7 +283,7 @@ class Codegen : public Visitor
 
     void visitAssignment(Assignment* p)
     {
-        cout << "    #visitAssignment\n";
+        cout << "    #visit Assignment\n";
         p->m_expr->accept(this);
         p->m_lhs->accept(this);
         // cout << "    popl %ebx" << endl;
@@ -300,7 +302,7 @@ class Codegen : public Visitor
 
     void visitCall(Call* p)
     {
-        cout << "#call" << endl;
+        cout << "    #visit Call" << endl;
         p->visit_children(this); 
 
         cout << "    call " << p->m_symname->spelling() << endl;
@@ -310,11 +312,11 @@ class Codegen : public Visitor
             cout << "    popl  %ebx" << endl; 
             cout << "    movl  %eax, (%ebx)" << endl; 
         }
-        cout << "#endcall" << endl;
     }
 
     void visitReturn(Return* p)
     {
+        cout << "    # visit Return" << endl;
         if (p->m_expr) {
             p->m_expr->accept(this);
             cout << "    popl  %eax" << endl;  
@@ -387,6 +389,7 @@ class Codegen : public Visitor
     // Variable declarations (no code generation needed)
     void visitDeclImpl(DeclImpl* p)
     {
+        cout << "    # visit VariableDecl" << endl;
         p->visit_children(this);
     }
 
@@ -570,8 +573,17 @@ class Codegen : public Visitor
 
     void visitMinus(Minus* p)
     {
-        p->visit_children(this); 
-        cout << "# Compiling -" << endl; 
+        cout << "# visit Minus" << endl; 
+        if (p->m_expr_1->m_attribute.m_basetype = bt_charptr) {
+            cout << "# charptr Minus" << endl; 
+            cout << "    popl  %ebx" << endl; 
+            cout << "    popl  %eax" << endl; 
+            cout << "    negl  %ebx" << endl; 
+            cout << "    imull $4, %ebx" << endl;
+            cout << "    subl %ebx, %eax" << endl;
+            cout << "    pushl %eax" << endl;
+        }
+        
         cout << "    popl  %ebx" << endl; 
         cout << "    popl  %eax" << endl; 
         cout << "    subl  %ebx, %eax" << endl; 
@@ -580,8 +592,16 @@ class Codegen : public Visitor
 
     void visitPlus(Plus* p)
     {
-        p->visit_children(this); 
-        cout << "# Compiling +" << endl; 
+        cout << "# visit Plus" << endl; 
+        if (p->m_expr_1->m_attribute.m_basetype = bt_charptr) {
+            cout << "# charptr Plus" << endl; 
+            cout << "    popl  %ebx" << endl; 
+            cout << "    popl  %eax" << endl; 
+            cout << "    negl  %ebx" << endl; 
+            cout << "    imull $4, %ebx" << endl;
+            cout << "    addl %ebx, %eax" << endl;
+            cout << "    pushl %eax" << endl;
+        }
         cout << "    popl  %ebx" << endl; 
         cout << "    popl  %eax" << endl; 
         cout << "    addl  %ebx, %eax" << endl; 
@@ -591,7 +611,7 @@ class Codegen : public Visitor
     void visitTimes(Times* p)
     {
         p->visit_children(this); 
-        cout << "# Compiling *" << endl; 
+        cout << "    # Compiling *" << endl; 
         cout << "    popl  %ebx" << endl; 
         cout << "    popl  %eax" << endl; 
         cout << "    imul  %ebx, %eax" << endl; 
@@ -601,7 +621,7 @@ class Codegen : public Visitor
     void visitDiv(Div* p)
     {
         p->visit_children(this); 
-        cout << "# Compiling /" << endl;
+        cout << "    # Compiling /" << endl;
         cout << "    popl  %ebx" << endl; 
         cout << "    popl  %eax" << endl; 
         cout << "    cdq  %ebx, %eax" << endl; 
@@ -612,7 +632,7 @@ class Codegen : public Visitor
     void visitNot(Not* p)
     {
         p->visit_children(this); 
-        cout << "# Compiling !" << endl;
+        cout << "    # Compiling !" << endl;
         cout << "    popl %eax" << endl;
         cout << "    xor %eax" << endl;
         cout << "    pushl %eax" << endl;
@@ -628,6 +648,7 @@ class Codegen : public Visitor
     // Variable and constant access
     void visitIdent(Ident* p)
     {
+        cout << "    #visit Ident" << endl;
         p->visit_children(this);
         const char* identName = p->m_symname->spelling();
         Symbol* sym = m_st->lookup(identName);
@@ -655,7 +676,8 @@ class Codegen : public Visitor
 
     void visitNullLit(NullLit* p)
     {
-        cout << "    pushl 0\n" << endl;
+        cout << "    #visitNullLit" << endl;
+        cout << "    pushl $0" << endl;
     }
 
     void visitArrayAccess(ArrayAccess* p)
@@ -702,7 +724,7 @@ class Codegen : public Visitor
 
     void visitVariable(Variable* p)
     {
-        cout << "    visitVariable" << endl;
+        cout << "    #visit Variable" << endl;
         if(p->m_attribute.m_basetype != bt_string) {
             p->visit_children(this);        
             int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();

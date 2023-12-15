@@ -1,33 +1,33 @@
-.global Main
+.globl Main
+    # Prologue
 foo:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $4, %esp
-    #visitAssignment
+    subl  $0, %esp
+    # visit Return
     pushl $1
-# variable!
-pushl $4
-    popl %eax
-    popl %ebx
-    negl %eax
-    movl %ebx, (%ebp, %eax)
-    pushl $45
     popl  %eax
     leave
+    # Epilogue
     ret
+    # Prologue
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $4, %esp
-    #visitAssignment
-    pushl $5
-# variable!
-pushl $4
-    popl %eax
-    popl %ebx
-    negl %eax
-    movl %ebx, (%ebp, %eax)
+    subl  $8, %esp
+    # visit VariableDecl
+    # visit VariableDecl
+    #visit Call
+    #visit Variable
+    pushl $8
+    call foo
+    #visit Variable
+    pushl $8
+    popl  %ebx
+    movl  %eax, (%ebx)
+    # visit Return
     pushl $97
     popl  %eax
     leave
+    # Epilogue
     ret
