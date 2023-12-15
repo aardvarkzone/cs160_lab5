@@ -4,12 +4,17 @@ foo:
     movl  %esp, %ebp
     subl  $4, %esp
     #visitAssignment
-    pushl $45
-    movl -0(%ebp), %eax
+    pushl $40
+    movl -4(%ebp), %eax
     pushl %eax
     popl %ebx
+    # pop var
     popl %eax
+    # pop val
     movl %eax, (%ebx)
+    # assign
+    popl $40
+    pushl $45
     popl  %eax
     leave
     ret
@@ -21,12 +26,10 @@ Main:
     movl -0(%ebp), %eax
     pushl %eax
     call foo
-    movl -0(%ebp), %eax
-    pushl %eax
     popl  %ebx
     movl  %eax, (%ebx)
 #endcall
-    pushl $99
+    pushl $97
     popl  %eax
     leave
     ret

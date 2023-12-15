@@ -285,11 +285,15 @@ class Codegen : public Visitor
         p->m_expr->accept(this);
         p->m_lhs->accept(this);
         cout << "    popl %ebx" << endl;
+        cout << "    # pop var" << endl;
         cout << "    popl %eax" << endl;
+        cout << "    # pop val" << endl;
         cout << "    movl %eax, (%ebx)" << endl;
+        cout << "    # assign" << endl;
         // cout << "    negl %eax" << endl;
         // cout << "    movl %eax, (%ebp, %eax)" << endl;
     }
+
 
     void visitCall(Call* p)
     {
@@ -298,13 +302,13 @@ class Codegen : public Visitor
         cout << "    call " << p->m_symname->mangled_spelling() << endl;
 
         if (p->m_lhs) {
-            p->m_lhs->accept(this);  
+            // p->m_lhs->accept(this);  
             cout << "    popl  %ebx" << endl; 
             cout << "    movl  %eax, (%ebx)" << endl; 
         }
         cout << "#endcall" << endl;
     }
-
+    
     void visitReturn(Return* p)
     {
         if (p->m_expr) {
@@ -692,6 +696,7 @@ class Codegen : public Visitor
             cout << "    pushl %eax" << endl;
         }
     }
+    
 
     void visitDerefVariable(DerefVariable* p)
     {

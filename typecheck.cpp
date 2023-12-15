@@ -397,6 +397,8 @@ class Typecheck : public Visitor
             parent->m_attribute.m_basetype = bt_integer;
         } else if ((type1 == bt_charptr && type2 == bt_integer) ||  (type2 == bt_charptr && type1 == bt_integer)) {
             parent->m_attribute.m_basetype = bt_charptr;
+        } else if ((type1 == bt_intptr && type2 == bt_integer) ||  (type2 == bt_intptr && type1 == bt_integer)) {
+            parent->m_attribute.m_basetype = bt_charptr;
         } else {
             t_error(expr_pointer_arithmetic_err, parent->m_attribute);
         }
