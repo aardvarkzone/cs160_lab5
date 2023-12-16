@@ -6,5 +6,5 @@ procedure Main() return char {
     
 
    
-    return s[0];
+    return 'c';
 }   

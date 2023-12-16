@@ -23,19 +23,12 @@ str_label_0: .ascii "hi"
 label0:
     movzbl (%esi), %eax
     movl %eax, (%edi)
-    subl $4, %esi
+    addl $4, %esi
     subl $4, %edi
     testl %eax, %eax
     jne label0
     # visit Return
-    # visit ArrayAccess
-# made it
-    leal 0(%ebp), %eax
-    #visit IntLit
-    pushl $0
-    popl %ecx
-    addl %ecx, %eax
-    pushl %eax
+    pushl $99
     popl  %eax # for return
     leave
     # Epilogue

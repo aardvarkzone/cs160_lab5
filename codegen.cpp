@@ -662,11 +662,10 @@ class Codegen : public Visitor
         cout << "    # visit ArrayAccess" << endl;
 
         Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
-        cout << "# made it" << endl;
         int arrayBaseOffset = sym->get_offset();
         cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl;
 
-        p->m_expr->accept(this); 
+        // p->m_expr->accept(this); 
         cout << "    popl %ecx" << endl; 
         cout << "    imull $4, %ecx" << endl; 
 
