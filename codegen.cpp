@@ -773,7 +773,7 @@ class Codegen : public Visitor
         cout << "label" << copy_label << ":" << endl;
         cout << "    movzbl (%esi), %eax" << endl;  
         cout << "    movl %eax, (%edi)" << endl; 
-        cout << "    subl $4, %esi" << endl;     
+        cout << "    addl $4, %esi" << endl;     
         cout << "    subl $4, %edi" << endl;     
         cout << "    testl %eax, %eax" << endl;   
         cout << "    jne label" << copy_label << endl; 

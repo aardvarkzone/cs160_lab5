@@ -4,50 +4,38 @@
 
 .globl Main
     # Prologue
-foo:
-    pushl %ebp
-    movl  %esp, %ebp
-    subl  $0, %esp
-    movl  8(%ebp), %eax
-    movl  %eax, -12(%ebp)
-    movl  12(%ebp), %eax
-    movl  %eax, -8(%ebp)
-    movl  16(%ebp), %eax
-    movl  %eax, -4(%ebp)
-    # visit VariableDecl
-    # visit Return
-    #visit Ident
-    movl  -4(%ebp), %eax #move from ident
-    pushl %eax #push
-    popl  %eax # for return
-    leave
-    # Epilogue
-    ret
-    # Prologue
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $4, %esp
+    subl  $12, %esp
     # visit VariableDecl
-    #visit IntLit
-    pushl $1
-    #visit IntLit
-    pushl $2
-    #visit IntLit
-    pushl $3
-    #visit Call
-    call foo
-    pushl  %eax
+    # visit StringAssignment
     #visit Variable
     pushl $4 #offset from visitVar
-    popl  %ebx
-    popl  %eax
-    negl  %ebx
-    movl  %eax, (%ebp, %ebx)
+    .data
+str_label_0: .ascii "hi"
+    .text
+    popl %eax
+    negl %eax
+    movl %ebp, %edi
+    addl %eax, %edi
+    movl $str_label_0, %esi
+label0:
+    movzbl (%esi), %eax
+    movl %eax, (%edi)
+    subl $4, %esi
+    subl $4, %edi
+    testl %eax, %eax
+    jne label0
     # visit Return
-    #visit Ident
-    movl  -4(%ebp), %eax #move from ident
-    pushl %eax #push
+    # visit ArrayAccess
+# made it
+    leal 0(%ebp), %eax
+    #visit IntLit
+    pushl $0
+    popl %ecx
+    addl %ecx, %eax
+    pushl %eax
     popl  %eax # for return
     leave
     # Epilogue
