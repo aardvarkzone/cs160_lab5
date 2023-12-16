@@ -4,7 +4,7 @@
 int Main(); 
 
 int main(int argc, char **argv) { 
-    int res = Main(); 
-    printf("%d\n", res); 
+    char res = Main(); 
+    printf("%c\n", res); 
     return 0; 
 }

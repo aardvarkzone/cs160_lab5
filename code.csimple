@@ -1,7 +1,8 @@
 
-procedure Main() return integer { 
-    var x : integer;
-    x = 2;
-    x = 12 + x;
-    return x; 
+procedure Main() return char { 
+    var a : string[100];
+
+    a = "apple";
+    
+    return 'c'; 
 }

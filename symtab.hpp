@@ -84,11 +84,11 @@ class Symbol
         case bt_boolean:
             return(4);
         case bt_char:
-            return(1);
+            return(1 * 4);
         case bt_procedure:
             return(0);
         case bt_string:
-            return m_string_size;
+            return m_string_size * 4;
         case bt_ptr:
             return(4);
         case bt_charptr:

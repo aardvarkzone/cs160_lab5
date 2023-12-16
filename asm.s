@@ -1,37 +1,33 @@
+.data
+
+.text
+
 .globl Main
     # Prologue
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $4, %esp
+    subl  $400, %esp
     # visit VariableDecl
-    #visit Assignment
-    #visit IntLit
-    pushl $2
+    # visit StringAssignment
     #visit Variable
-    pushl $4 #offset from visitVar
-    popl %eax #offset
-    popl %ebx #value
-    negl %eax #offset
-    movl %ebx, (%ebp, %eax)
-    # assign
-    #visit Assignment
-    # visit Plus
-    popl  %ebx
-    popl  %eax
-    addl  %ebx, %eax
-    pushl  %eax
-    #visit Variable
-    pushl $4 #offset from visitVar
-    popl %eax #offset
-    popl %ebx #value
-    negl %eax #offset
-    movl %ebx, (%ebp, %eax)
-    # assign
+    leal 0(%ebp), %eax
+    pushl %eax
+    .data
+str_label_0: .ascii "apple"
+    .text
+    leal (%ebp), %edi
+    addl %eax, %edi
+    movl $str_label_0, %esi
+label0:
+    movl (%esi), %eax
+    movl %eax, (%edi)
+    addl $4, %esi
+    addl $4, %edi
+    testl %eax, %eax
+    jne label0
     # visit Return
-    #visit Ident
-    movl  -4(%ebp), %eax #move from ident
-    pushl %eax #push
+    pushl $99
     popl  %eax # for return
     leave
     # Epilogue

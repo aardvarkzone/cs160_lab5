@@ -182,8 +182,11 @@ class Typecheck : public Visitor
                 s->m_basetype = bt_charptr;
             } else if(dynamic_cast<TIntPtr*>(p->m_type)) {
                 s->m_basetype = bt_intptr;
+                
             } else if(dynamic_cast<TString*>(p->m_type)) {
                 s->m_basetype = bt_string;
+                TString* temp = dynamic_cast<TString*>(p->m_type); 
+                s->m_string_size = temp->m_primitive->m_data;
             } 
             if (!m_st->insert(name, s)) {
                 // cout << "Trying to insert duplicate variable '" << name << "' in scope " << m_st->get_scope() << endl;
@@ -191,6 +194,7 @@ class Typecheck : public Visitor
             } else {
                 // cout << "Inserted variable '" << name << "' in scope " << m_st->get_scope() << endl;
             }
+            p->m_attribute.m_scope = m_st->get_scope();
         }
         
     }
@@ -647,6 +651,7 @@ class Typecheck : public Visitor
     {
         p->visit_children(this);
         check_string_assignment(p);
+        
     }
 
     void visitIdent(Ident* p)

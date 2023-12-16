@@ -177,7 +177,8 @@ class Codegen : public Visitor
         m_st = st;
         label_count = 0;
         // size_of_locals = 0;
-        // cout << ".text\n" << endl;
+        cout << ".data\n" << endl;
+        cout << ".text\n" << endl;
         cout << ".globl Main" << endl;
     }
 
@@ -189,29 +190,29 @@ class Codegen : public Visitor
     void visitProcImpl(ProcImpl* p)
     {
         list<Decl_ptr>::iterator it;
-        int size_of_locals = 0;
+        // int size_of_locals = 0;
         // cout << "Number of declarations: " << p->m_decl_list->size() << endl;
         
-        for (it = p->m_decl_list->begin(); it != p->m_decl_list->end(); ++it) {
-            Decl_ptr decl = *it;
-            Basetype type = decl->m_attribute.m_basetype;
-            int type_size = 0;
-            switch(type) {
-                case bt_string:
-                    type_size = 4; 
-                    break;
-                case bt_undef: 
-                    type_size = 0; 
-                    break;
-                default:
-                    type_size = 4; 
-            }
-            size_of_locals += 4;
-        }
+        // for (it = p->m_decl_list->begin(); it != p->m_decl_list->end(); ++it) {
+        //     Decl_ptr decl = *it;
+        //     Basetype type = decl->m_attribute.m_basetype;
+        //     int type_size = 0;
+        //     // switch(type) {
+        //     //     case bt_string:
+        //     //         type_size = 4; 
+        //     //         break;
+        //     //     case bt_undef: 
+        //     //         type_size = 0; 
+        //     //         break;
+        //     //     default:
+        //     //         type_size = 4; 
+        //     // }
+        //     size_of_locals += type_size;
+        // }
         
         Procedure_blockImpl *procblockImpl = dynamic_cast<Procedure_blockImpl*>(p->m_procedure_block);
         std::list<Decl_ptr>::iterator it_2;
-        int size = 0;
+        int size_of_locals = 0;
         for(it_2 = procblockImpl->m_decl_list->begin();
             it_2 != procblockImpl->m_decl_list->end();
             ++it_2){
@@ -223,57 +224,21 @@ class Codegen : public Visitor
                         ++m_symname_list_iter)
                     {
                         SymName *s = dynamic_cast<SymName*>(*m_symname_list_iter);
-                        if (m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size() == 4 || 
-                             m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size() == 1) {
-                            size += 4;
-                        } else {
-                            size += m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size();
-                        }
+                        size_of_locals += m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size();
+                        // cout << "    #gotsize\n";
+                        // cout << "    #" << m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size() << endl;
                     }
         }
-        size_of_locals += size;
-        int num_args = m_st->lookup(p->m_symname->spelling())->m_arg_type.size(); 
-        // cout << "\nnum_args: " << num_args << "\n" << endl;
-       
-
+        int num_args = m_st->lookup(p->m_symname->spelling())->m_arg_type.size();
         emit_prologue(p->m_symname, size_of_locals, num_args);
         // cout << "\n" << size_of_locals << "\n\n";
 
         p->visit_children(this);
-        // size_of_locals = calculate_size_of_locals(p->m_decl_list);
-
-        // int num_args = m_st->lookup(p->m_symname->spelling())->m_arg_type.size(); 
-
-        // emit_prologue(p->m_symname, size_of_locals, num_args);
-
-        // p->visit_children(this);
-        // cout << "\n#size_of_locals after visit: " << size_of_locals << "\n\n";
-        // cout << "\n#end of visitProcImpl\n\n";
     }
 
     void visitProcedure_blockImpl(Procedure_blockImpl* p)
     {
-        // list<Decl_ptr>::iterator it;
-        // for (it = p->m_decl_list->begin(); it != p->m_decl_list->end(); ++it) {
-        //     Decl_ptr decl = *it;
-        //     Basetype type = decl->m_attribute.m_basetype;
-        //     int type_size = 0;
-        //     switch(type) {
-        //         case bt_string:
-        //             type_size = 4; 
-        //             break;
-        //         case bt_undef: 
-        //             type_size = 0; 
-        //             break;
-        //         default:
-        //             type_size = 4; 
-        //     }
-        //     size_of_locals += 4;
-        // }
         p->visit_children(this);
-        // size_of_locals += calculate_size_of_locals(p->m_decl_list);
-
-        // p->visit_children(this);
     }
 
     void visitNested_blockImpl(Nested_blockImpl* p)
@@ -286,12 +251,6 @@ class Codegen : public Visitor
         cout << "    #visit Assignment\n";
         p->m_expr->accept(this);
         p->m_lhs->accept(this);
-        // cout << "    popl %ebx" << endl;
-        // cout << "    # pop var" << endl;
-        // cout << "    popl %eax" << endl;
-        // cout << "    # pop val" << endl;
-        // cout << "    movl %eax, (%ebx)" << endl;
-        // cout << "    # assign" << endl;
         cout << "    popl %eax #offset" << endl;
         cout << "    popl %ebx #value" << endl;
         cout << "    negl %eax #offset" << endl;
@@ -701,18 +660,7 @@ class Codegen : public Visitor
     {
         p->visit_children(this);
 
-        cout << "    popl  %edx" << endl;  
-
-        Symbol* sym = m_st->lookup(p->m_symname->spelling());
-        if (sym != NULL) {
-            int baseOffset = sym->get_offset();  
-
-            cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
-            cout << "    addl  %edx, %eax" << endl; 
-            cout << "    movl  (%eax), %eax" << endl;
-
-            cout << "    pushl %eax" << endl;
-        }
+        
     }
 
     // LHS
@@ -725,6 +673,14 @@ class Codegen : public Visitor
             p->visit_children(this);        
             int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
             cout << "    pushl $" << offset << " #offset from visitVar" << endl; 
+        } else {
+            p->visit_children(this);        
+            Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
+            int offset = sym->get_offset(); // The offset where the string starts
+            cout << "    leal " << offset << "(%ebp), %eax" << endl; // Load the address of the string into %eax
+            cout << "    pushl %eax" << endl;
+
+            
         }
     }
 
@@ -744,19 +700,7 @@ class Codegen : public Visitor
     {
         p->visit_children(this);
 
-        cout << "    popl  %edx" << endl;  
-
-        Symbol* sym = m_st->lookup(p->m_symname->spelling());
-        if (sym != NULL) {
-            int baseOffset = sym->get_offset();  
-
-            cout << "    leal  " << baseOffset << "(%ebp), %eax" << endl;  
-            cout << "    addl  %edx, %eax" << endl;  
-
-            cout << "    movl  (%eax), %eax" << endl;
-
-            cout << "    pushl %eax" << endl;
-        }
+        
     }
 
     // Special cases
@@ -771,47 +715,71 @@ class Codegen : public Visitor
     // Strings
     void visitStringAssignment(StringAssignment* p)
     {
-        p->visit_children(this); 
+        cout << "    # visit StringAssignment" << endl;
+
+        p->m_lhs->accept(this);
+
+        static int stringLiteralCount = 0;
+        string label = "str_label_" + to_string(stringLiteralCount++);
+
+        cout << "    .data" << endl;
+        cout << label << ": .ascii \"" << p->m_stringprimitive->m_string << "\"" << endl; 
+
+        cout << "    .text" << endl;
+
+        cout << "    leal (%ebp), %edi" << endl;
+        cout << "    addl %eax, %edi" << endl;   
+
+        cout << "    movl $" << label << ", %esi" << endl;
         
-        cout << "    popl  %esi" << endl; 
-        cout << "    popl  %edi" << endl; 
+        int copy_label = new_label();
         
-        cout << "    movl  $0, %ecx" << endl;  // loop count
-        cout << "string_copy_loop:" << endl;
-        cout << "    movb  (%esi, %ecx, 1), %al" << endl;  
-        cout << "    movb  %al, (%edi, %ecx, 1)" << endl;  
-        cout << "    incl  %ecx" << endl;                  
-        cout << "    testb %al, %al" << endl;             
-        cout << "    jne   string_copy_loop" << endl; 
+        cout << "label" << copy_label << ":" << endl;
+        cout << "    movl (%esi), %eax" << endl;  
+        cout << "    movl %eax, (%edi)" << endl; 
+        cout << "    addl $4, %esi" << endl;     
+        cout << "    addl $4, %edi" << endl;     
+        cout << "    testl %eax, %eax" << endl;   
+        cout << "    jne label" << copy_label << endl; 
     }
+
 
     void visitStringPrimitive(StringPrimitive* p)
     {
-        cout << "    pushl $" << p->m_string << endl;
+        cout << "    # visit StringPrimitive" << endl; 
     }
 
     void visitAbsoluteValue(AbsoluteValue* p)
     {
-        int label_is_positive = new_label();
-        int label_end = new_label();
+        if (p->m_expr->m_attribute.m_basetype == bt_string)
+        {
+            cout << "    # string input" << endl;
+            // int stringLength =  m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size(); 
+            // cout << "    movl $" << stringLength << ", %eax" << endl; 
+            // cout << "    pushl %eax" << endl; 
+        }
+        else
+        {
+            cout << "    # non-string input" << endl;
+            cout << "    popl  %eax" << endl;
 
-        p->visit_children(this);
+            cout << "    cmpl  $0, %eax" << endl;
+            int label_is_positive = new_label();
+            int label_end = new_label();
+            cout << "    jge   label" << label_is_positive << endl;
 
-        cout << "    popl  %eax" << endl;
+            cout << "    negl  %eax" << endl;
 
-        cout << "    cmpl  $0, %eax" << endl;
-        cout << "    jge   label" << label_is_positive << endl;
+            cout << "    jmp   label" << label_end << endl;
 
-        cout << "    negl  %eax" << endl;
+            cout << "label" << label_is_positive << ":" << endl;
 
-        cout << "    jmp   label" << label_end << endl;
+            cout << "label" << label_end << ":" << endl;
 
-        cout << "label" << label_is_positive << ":" << endl;
-
-        cout << "label" << label_end << ":" << endl;
-
-        cout << "    pushl %eax" << endl;
+            cout << "    pushl %eax" << endl;
+        }
     }
+        
 
     // Pointer
     void visitAddressOf(AddressOf* p)
