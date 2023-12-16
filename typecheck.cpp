@@ -244,7 +244,7 @@ class Typecheck : public Visitor
         // }
 
         if (returnType == bt_string) {
-            t_error(call_type_mismatch, p->m_attribute);
+            // t_error(call_type_mismatch, p->m_attribute);
         }
     }
 
