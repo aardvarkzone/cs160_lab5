@@ -1,10 +1,13 @@
+procedure Main() return integer { 
+    var x: integer;
+    var y: boolean; 
 
+    y = (false || (false || true));
 
-procedure Main() return char { 
-    var x : charptr;
-    var y : string[10];
-    var z : char;
-    y = "foobar";
-    y[0] = 'a'; 
-    return z; 
+    x = 0;
+    while (y) {
+        x = x + 1;
+    }
+
+    return x; 
 }

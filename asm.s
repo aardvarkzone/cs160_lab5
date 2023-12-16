@@ -7,46 +7,64 @@
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $48, %esp
+    subl  $8, %esp
     # visit VariableDecl
     # visit VariableDecl
-    # visit VariableDecl
-    # visit StringAssignment
-    #visit Variable
-    leal 4(%ebp), %eax
-    pushl %eax
-    .data
-str_label_0: .ascii "foobar"
-    .text
-    leal (%ebp), %edi
-    addl %eax, %edi
-    movl $str_label_0, %esi
-label0:
-    movl (%esi), %eax
-    movl %eax, (%edi)
-    addl $4, %esi
-    addl $4, %edi
-    testl %eax, %eax
-    jne label0
     #visit Assignment
-    pushl $97
-    # visit ArrayElement
-    # v1
-    leal 4(%ebp), %eax
-    #visit IntLit
     pushl $0
-    popl %ecx
-    imull $4, %ecx
-    addl %ecx, %eax
-    pushl %eax
+    pushl $0
+    pushl $1
+# Compiling p
+    orl %ebx, %eax
+# Compiling p
+    orl %ebx, %eax
+    #visit Variable
+    pushl $8 #offset from visitVar
     popl %eax #offset
     popl %ebx #value
     negl %eax #offset
     movl %ebx, (%ebp, %eax)
     # assign
+    #visit Assignment
+    #visit IntLit
+    pushl $0
+    #visit Variable
+    pushl $4 #offset from visitVar
+    popl %eax #offset
+    popl %ebx #value
+    negl %eax #offset
+    movl %ebx, (%ebp, %eax)
+    # assign
+label0:
+    #visit Ident
+    movl  -8(%ebp), %eax #move from ident
+    pushl %eax #push
+    popl  %eax
+    cmpl  $0, %eax
+    je    label1
+    #visit Assignment
+    #visit Ident
+    movl  -4(%ebp), %eax #move from ident
+    pushl %eax #push
+    #visit IntLit
+    pushl $1
+    # visit Plus
+    popl  %ebx
+    popl  %eax
+    addl  %ebx, %eax
+    pushl  %eax
+    #visit Variable
+    pushl $4 #offset from visitVar
+    popl %eax #offset
+    popl %ebx #value
+    negl %eax #offset
+    movl %ebx, (%ebp, %eax)
+    # assign
+    jmp   label0
+label1:
     # visit Return
     #visit Ident
-    movl  -48(%ebp), %eax #move from ident
+    movl  -4(%ebp), %eax #move from ident
     pushl %eax #push
     popl  %eax # for return
     leave

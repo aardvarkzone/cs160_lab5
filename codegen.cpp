@@ -538,8 +538,9 @@ class Codegen : public Visitor
 
     void visitMinus(Minus* p)
     {
+        p->visit_children(this);
         cout << "# visit Minus" << endl; 
-        if (p->m_expr_1->m_attribute.m_basetype = bt_charptr) {
+        if (p->m_expr_1->m_attribute.m_basetype != bt_charptr) {
             cout << "# charptr Minus" << endl; 
             cout << "    popl  %ebx" << endl; 
             cout << "    popl  %eax" << endl; 
@@ -559,6 +560,7 @@ class Codegen : public Visitor
 
     void visitPlus(Plus* p)
     {
+        p->visit_children(this);
         cout << "    # visit Plus" << endl; 
         if (p->m_expr_1->m_attribute.m_basetype != bt_charptr) {
             cout << "    popl  %ebx" << endl; 
@@ -659,20 +661,19 @@ class Codegen : public Visitor
     {
         cout << "    # visit ArrayAccess" << endl;
 
-        // Symbol* sym = m_st->lookup(p->m_attribute2.m_scope, p->m_symname->spelling());
-        // cout << "# made it" << endl;
-        // int arrayBaseOffset = sym->get_offset();
-        // cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl;
+        Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
+        cout << "# made it" << endl;
+        int arrayBaseOffset = sym->get_offset();
+        cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl;
 
-        // p->m_expr->accept(this); // This should push the index onto the stack
+        p->m_expr->accept(this); 
+        cout << "    popl %ecx" << endl; 
+        cout << "    imull $4, %ecx" << endl; 
 
-        // cout << "    popl %ecx" << endl; 
-        // cout << "    imull $4, %ecx" << endl; 
-
-        // cout << "    addl %ecx, %eax" << endl;
+        cout << "    addl %ecx, %eax" << endl;
 
 
-        // cout << "    pushl %eax" << endl;
+        cout << "    pushl %eax" << endl;
     }
 
     // LHS
@@ -688,9 +689,10 @@ class Codegen : public Visitor
         } else {
             p->visit_children(this);        
             Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
-            int offset = sym->get_offset(); 
-            cout << "    leal " << offset << "(%ebp), %eax" << endl;
-            cout << "    pushl %eax" << endl;
+            int offset = sym->get_offset() + 4; 
+            // cout << "    leal " << offset << "(%ebp), %eax" << endl;
+            // cout << "    pushl %eax" << endl;
+            cout << "    pushl $" << offset << " #offset from visitVar" << endl; 
         }
     }
 
@@ -713,17 +715,21 @@ class Codegen : public Visitor
 
         Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
        
-        cout << "    # v1" << endl;
         int arrayBaseOffset = sym->get_offset();
-        cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl; 
+        // cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl; 
+        cout << "    movl " << arrayBaseOffset << "(%ebp), %eax" << endl;
 
         p->m_expr->accept(this); 
 
         cout << "    popl %ecx" << endl; 
         cout << "    imull $4, %ecx" << endl;
         cout << "    addl %ecx, %eax" << endl;
-        cout << "    pushl %eax" << endl;
+        // cout << "    pushl %eax" << endl;
+        cout << "    negl %eax" << endl;
+        cout << "    addl %ebp, %eax" << endl;
+        cout << "    movl %ebx, (%ebp, %eax)" << endl;
     }
+
 
         
     
@@ -751,19 +757,24 @@ class Codegen : public Visitor
         cout << label << ": .ascii \"" << p->m_stringprimitive->m_string << "\"" << endl; 
 
         cout << "    .text" << endl;
+        cout << "    popl %eax" << endl; 
+        cout << "    negl %eax" << endl; 
+        // cout << "    leal (%ebp), %edi" << endl;
+        // cout << "    addl %eax, %edi" << endl;   
+        cout << "    movl %ebp, %edi" << endl;
+        cout << "    addl %eax, %edi" << endl;
+        // cout << "    movl %ebp, %edi" << endl;
 
-        cout << "    leal (%ebp), %edi" << endl;
-        cout << "    addl %eax, %edi" << endl;   
 
         cout << "    movl $" << label << ", %esi" << endl;
         
         int copy_label = new_label();
         
         cout << "label" << copy_label << ":" << endl;
-        cout << "    movl (%esi), %eax" << endl;  
+        cout << "    movzbl (%esi), %eax" << endl;  
         cout << "    movl %eax, (%edi)" << endl; 
-        cout << "    addl $4, %esi" << endl;     
-        cout << "    addl $4, %edi" << endl;     
+        cout << "    subl $4, %esi" << endl;     
+        cout << "    subl $4, %edi" << endl;     
         cout << "    testl %eax, %eax" << endl;   
         cout << "    jne label" << copy_label << endl; 
     }

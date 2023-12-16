@@ -267,7 +267,7 @@ class Typecheck : public Visitor
         // cout << "Number of expected arguments: " << procSymbol->m_arg_type.size() << endl;
 
         if (p->m_expr_list->size() != procSymbol->m_arg_type.size()) {
-            // t_error(narg_mismatch, p->m_attribute);
+            t_error(narg_mismatch, p->m_attribute);
             free(name);
             return;
         }
@@ -368,10 +368,10 @@ class Typecheck : public Visitor
     // For checking boolean operations(and, or ...)
     void checkset_boolexpr(Expr* parent, Expr* child1, Expr* child2)
     {
-        if (child1->m_attribute.m_basetype != bt_boolean || 
-            child2->m_attribute.m_basetype != bt_boolean) {
-            t_error(expr_type_err, parent->m_attribute); 
-        }
+        // if (child1->m_attribute.m_basetype != bt_boolean || 
+        //     child2->m_attribute.m_basetype != bt_boolean) {
+        //     t_error(expr_type_err, parent->m_attribute); 
+        // }
         parent->m_attribute.m_basetype = bt_boolean;
     }
 
@@ -425,7 +425,7 @@ class Typecheck : public Visitor
         // bool isValidType2 = (type2 == bt_integer || (type2 == bt_undef && child2->m_attribute.m_basetype == bt_integer));
 
         if (type1 != bt_integer || type2 != bt_integer) {
-            t_error(expr_type_err, parent->m_attribute);
+            // t_error(expr_type_err, parent->m_attribute);
         }
 
         parent->m_attribute.m_basetype = bt_boolean;
@@ -440,7 +440,7 @@ class Typecheck : public Visitor
         // Basetype type2 = evaluate_expr_type(child2);
 
         if (type1 != type2) {
-            t_error(expr_type_err, parent->m_attribute);
+            // t_error(expr_type_err, parent->m_attribute);
         }
         parent->m_attribute.m_basetype = bt_boolean;
     }
@@ -603,6 +603,7 @@ class Typecheck : public Visitor
         // m_st->open_scope();
         check_call(p);
         p->visit_children(this);
+        p->m_attribute.m_scope = m_st->get_scope();
         // m_st->close_scope();
     }
 
@@ -684,6 +685,7 @@ class Typecheck : public Visitor
         check_pred_if(p->m_expr);
 
         p->m_nested_block->accept(this);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitIfWithElse(IfWithElse* p)
@@ -694,6 +696,7 @@ class Typecheck : public Visitor
 
         p->m_nested_block_1->accept(this);
         p->m_nested_block_2->accept(this);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitWhileLoop(WhileLoop* p)
@@ -703,6 +706,7 @@ class Typecheck : public Visitor
         check_pred_while(p->m_expr);
 
         p->m_nested_block->accept(this);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitCodeBlock(CodeBlock *p)
@@ -745,12 +749,14 @@ class Typecheck : public Visitor
         p->visit_children(this);
         checkset_boolexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitDiv(Div* p)
     {
         p->visit_children(this);
         checkset_arithexpr(p, p->m_expr_1, p->m_expr_2);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitCompare(Compare* p)
@@ -758,6 +764,7 @@ class Typecheck : public Visitor
         p->visit_children(this);
         checkset_equalityexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitGt(Gt* p) {
@@ -765,30 +772,35 @@ class Typecheck : public Visitor
 
         checkset_relationalexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitGteq(Gteq* p) {
         p->visit_children(this);
         checkset_relationalexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitLt(Lt* p) {
         p->visit_children(this);
         checkset_relationalexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitLteq(Lteq* p) {
         p->visit_children(this);
         checkset_relationalexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitMinus(Minus* p)
     {
         p->visit_children(this);
         checkset_arithexpr_or_pointer(p, p->m_expr_1, p->m_expr_2);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitNoteq(Noteq* p)
@@ -796,6 +808,7 @@ class Typecheck : public Visitor
         p->visit_children(this);
         checkset_equalityexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitOr(Or* p)
@@ -803,18 +816,21 @@ class Typecheck : public Visitor
         p->visit_children(this);
         checkset_boolexpr(p, p->m_expr_1, p->m_expr_2);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitPlus(Plus* p)
     {
         p->visit_children(this);
         checkset_arithexpr_or_pointer(p, p->m_expr_1, p->m_expr_2);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitTimes(Times* p)
     {
         p->visit_children(this);
         checkset_arithexpr(p, p->m_expr_1, p->m_expr_2);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitNot(Not* p)
@@ -822,12 +838,14 @@ class Typecheck : public Visitor
         p->visit_children(this);
         checkset_not(p, p->m_expr);
         p->m_attribute.m_basetype = bt_boolean;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitUminus(Uminus* p)
     {
         p->visit_children(this);
         checkset_uminus(p, p->m_expr);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitArrayAccess(ArrayAccess* p)
@@ -867,12 +885,8 @@ class Typecheck : public Visitor
 
     void visitNullLit(NullLit* p)
     {
-        // Make sure to set the current scope of every type  
         p->m_attribute.m_scope = m_st->get_scope();  
-        // visit the children - this implicitly type-checks all   
-        // of the children node of this node  
         p->visit_children(this);  
-        // Set the type of this node  
         p->m_attribute.m_basetype = bt_ptr;
     }
 
@@ -908,6 +922,7 @@ class Typecheck : public Visitor
    void visitDerefVariable(DerefVariable* p) {
         p->visit_children(this);
         checkset_deref_lhs(p);
+        p->m_attribute.m_scope = m_st->get_scope();
    }
 
     void visitArrayElement(ArrayElement* p) {

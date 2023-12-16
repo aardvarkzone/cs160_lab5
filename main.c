@@ -1,10 +1,10 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 
-char Main(); 
+int Main(); 
 
 int main(int argc, char **argv) { 
-    char res = Main(); 
-    printf("%c\n", res); 
+    int res = Main(); 
+    printf("%d\n", res); 
     return 0; 
 }
