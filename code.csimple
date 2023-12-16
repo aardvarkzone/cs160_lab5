@@ -1,14 +1,12 @@
 
-procedure foo() return integer { 
-	return 2; 
-}
 
 
+procedure Main() return integer { 
+    var z : integer;
+    var y : integer;
+    z = 1;
+    y = 10;
 
-
-procedure Main() return char { 
-    var x : integer;
-    x = foo();
-	return 'a'; 
+	return y; 
 }
 

@@ -484,20 +484,18 @@ class Typecheck : public Visitor
                 } else if (s->m_basetype == bt_char) {
                     parent->m_attribute.m_basetype = bt_charptr;
                 } else {
-                    t_error(expr_addressof_error, parent->m_attribute);
+                    t_error(expr_addressof_error, child->m_attribute);
                 }
             }
-        }
-        // } else if (auto arrayElem = dynamic_cast<ArrayElement*>(child)) {
-        //     Symbol* arraySymbol = m_st->lookup(arrayElem->m_symname->spelling());
-        //     if (arraySymbol && arraySymbol->m_basetype == bt_string) {
-        //         parent->m_attribute.m_basetype = bt_charptr; 
-        //     } else {
-        //         t_error(expr_addressof_error, child->m_attribute);
-        //     }
-        // } 
-        else {
-            t_error(expr_addressof_error, parent->m_attribute);
+        } else if (auto arrayElem = dynamic_cast<ArrayElement*>(child)) {
+            Symbol* arraySymbol = m_st->lookup(arrayElem->m_symname->spelling());
+            if (arraySymbol && arraySymbol->m_basetype == bt_string) {
+                parent->m_attribute.m_basetype = bt_charptr; 
+            } else {
+                t_error(expr_addressof_error, child->m_attribute);
+            }
+        } else {
+            t_error(expr_addressof_error, child->m_attribute);
         }
     }
 
