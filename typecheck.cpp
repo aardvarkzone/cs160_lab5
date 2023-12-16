@@ -147,7 +147,9 @@ class Typecheck : public Visitor
             DeclImpl* decl = dynamic_cast<DeclImpl*>(declPtr);
             if (decl) {  
                 Basetype argType = decl->m_type->m_attribute.m_basetype;
-                s->m_arg_type.push_back(argType);
+                for (auto& symNamePtr : *(decl->m_symname_list)) {
+                    s->m_arg_type.push_back(argType);
+                }
             }
         }
 

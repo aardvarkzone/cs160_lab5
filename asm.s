@@ -9,6 +9,10 @@ foo:
     movl  %esp, %ebp
     subl  $0, %esp
     movl  8(%ebp), %eax
+    movl  %eax, -12(%ebp)
+    movl  12(%ebp), %eax
+    movl  %eax, -8(%ebp)
+    movl  16(%ebp), %eax
     movl  %eax, -4(%ebp)
     # visit VariableDecl
     # visit Return
