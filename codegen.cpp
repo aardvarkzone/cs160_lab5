@@ -660,13 +660,14 @@ class Codegen : public Visitor
     {
         cout << "    #visit Ident" << endl;
         p->visit_children(this);
-        const char* identName = p->m_symname->spelling();
-        Symbol* sym = m_st->lookup(identName);
+        Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
+        
         if (sym != NULL) {
-            int offset = sym->get_offset();
+            // int offset = sym->get_offset();
+            int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
             cout << "    movl  " << -offset << "(%ebp), %eax" << endl;  
             cout << "    pushl %eax" << endl;  
-        }   
+        } else { cout << "    #error!" << endl; }
     }
 
     void visitBoolLit(BoolLit* p)

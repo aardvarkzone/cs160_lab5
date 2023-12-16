@@ -263,7 +263,7 @@ class Typecheck : public Visitor
         // cout << "Number of expected arguments: " << procSymbol->m_arg_type.size() << endl;
 
         if (p->m_expr_list->size() != procSymbol->m_arg_type.size()) {
-            t_error(narg_mismatch, p->m_attribute);
+            // t_error(narg_mismatch, p->m_attribute);
             free(name);
             return;
         }
@@ -657,6 +657,7 @@ class Typecheck : public Visitor
             this->t_error(var_undef, p->m_attribute);
         }
         p->m_attribute.m_basetype = m_st->lookup(name)->m_basetype;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitReturn(Return* p)

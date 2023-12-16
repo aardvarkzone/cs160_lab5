@@ -1,19 +1,14 @@
 
 
 
-procedure foo(a, b : integer) return integer { 
-    
-	return 3; 
-}
-
-
-
 procedure Main() return integer { 
     var z : integer;
     var y : integer;
-    z = foo(3, 1);
-    y = 10 + 11;
+    var x : integer;
+    z = 4;
+    y = 1;
+    x = 2;
 
-	return y; 
+	return z; 
 }
 
