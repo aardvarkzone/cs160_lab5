@@ -487,6 +487,7 @@ class Typecheck : public Visitor
                     t_error(expr_addressof_error, parent->m_attribute);
                 }
             }
+        }
         // } else if (auto arrayElem = dynamic_cast<ArrayElement*>(child)) {
         //     Symbol* arraySymbol = m_st->lookup(arrayElem->m_symname->spelling());
         //     if (arraySymbol && arraySymbol->m_basetype == bt_string) {
