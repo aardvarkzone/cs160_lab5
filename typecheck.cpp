@@ -227,7 +227,7 @@ class Typecheck : public Visitor
         if(p->m_type->m_attribute.m_basetype != p->m_procedure_block->m_attribute.m_basetype) {
             this->t_error(ret_type_mismatch, p->m_attribute);
         }
-        // m_st->dump(stdout);
+        
     }
 
     // Check that the declared return type is not an array
@@ -374,7 +374,7 @@ class Typecheck : public Visitor
         Basetype type1 = child1->m_attribute.m_basetype;
         Basetype type2 = child2->m_attribute.m_basetype;
 
-        if (type1 != bt_intptr || type2 != bt_intptr || type1 != bt_charptr || type2 != bt_charptr) {
+        if (type1 == bt_intptr || type2 == bt_intptr || type1 == bt_charptr || type2 == bt_charptr) {
             t_error(expr_pointer_arithmetic_err, parent->m_attribute);
         }
 
@@ -562,15 +562,33 @@ class Typecheck : public Visitor
 
     void visitProcImpl(ProcImpl* p) {
 
-        add_proc_symbol(p); 
+        // add_proc_symbol(p); 
+        // m_st->open_scope();
+        // p->visit_children(this);
+        // p->m_attribute.m_scope = m_st->get_scope();
+        // // if (p->m_type != nullptr) {
+        // //     p->m_type->accept(this);
+        // // }
+        // check_proc(p);
+        // m_st->close_scope();
+        add_proc_symbol(p);
         m_st->open_scope();
-        p->visit_children(this);
         p->m_attribute.m_scope = m_st->get_scope();
-        // if (p->m_type != nullptr) {
-        //     p->m_type->accept(this);
-        // }
-        check_proc(p);
+        p->m_symname->accept(this);
+        std::list<Decl_ptr>::iterator m_decl_list_iter;
+        for(m_decl_list_iter = p->m_decl_list->begin();
+        m_decl_list_iter != p->m_decl_list->end();
+        ++m_decl_list_iter){
+            (*m_decl_list_iter)->accept(this);
+        }
+        p->m_type->accept(this);
+        
+
+        p->m_procedure_block->accept(this);
         m_st->close_scope();
+
+        check_proc(p);
+
     }
 
     void visitCall(Call* p)
