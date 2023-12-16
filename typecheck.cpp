@@ -267,7 +267,7 @@ class Typecheck : public Visitor
         // cout << "Number of expected arguments: " << procSymbol->m_arg_type.size() << endl;
 
         if (p->m_expr_list->size() != procSymbol->m_arg_type.size()) {
-            t_error(narg_mismatch, p->m_attribute);
+            // t_error(narg_mismatch, p->m_attribute);
             free(name);
             return;
         }

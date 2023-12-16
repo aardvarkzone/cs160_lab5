@@ -142,7 +142,7 @@ class Codegen : public Visitor
         if (num_args > 0) {
             for (unsigned int i = 0; i < num_args; i++) {
                 int offset = 8 + (i * 4);
-                int temp_offset = -4 * (i + 1);
+                int temp_offset = -4 * (num_args - i);
                 cout << "    movl  " << offset << "(%ebp), %eax" << endl;  
                 cout << "    movl  %eax, " << temp_offset << "(%ebp)" << endl;  
             }
