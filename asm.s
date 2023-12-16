@@ -7,7 +7,8 @@
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $400, %esp
+    subl  $404, %esp
+    # visit VariableDecl
     # visit VariableDecl
     # visit StringAssignment
     #visit Variable
@@ -26,6 +27,15 @@ label0:
     addl $4, %edi
     testl %eax, %eax
     jne label0
+    #visit Assignment
+    # string input
+    #visit Variable
+    pushl $404 #offset from visitVar
+    popl %eax #offset
+    popl %ebx #value
+    negl %eax #offset
+    movl %ebx, (%ebp, %eax)
+    # assign
     # visit Return
     pushl $99
     popl  %eax # for return

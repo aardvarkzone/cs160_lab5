@@ -627,7 +627,6 @@ class Codegen : public Visitor
         Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
         
         if (sym != NULL) {
-            // int offset = sym->get_offset();
             int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
             cout << "    movl  " << -offset << "(%ebp), %eax #move from ident" << endl;  
             cout << "    pushl %eax #push" << endl;  
@@ -676,8 +675,8 @@ class Codegen : public Visitor
         } else {
             p->visit_children(this);        
             Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
-            int offset = sym->get_offset(); // The offset where the string starts
-            cout << "    leal " << offset << "(%ebp), %eax" << endl; // Load the address of the string into %eax
+            int offset = sym->get_offset(); 
+            cout << "    leal " << offset << "(%ebp), %eax" << endl;
             cout << "    pushl %eax" << endl;
 
             
@@ -754,9 +753,18 @@ class Codegen : public Visitor
         if (p->m_expr->m_attribute.m_basetype == bt_string)
         {
             cout << "    # string input" << endl;
-            // int stringLength =  m_st->lookup(p->m_attribute.m_scope, s->spelling())->get_size(); 
-            // cout << "    movl $" << stringLength << ", %eax" << endl; 
-            // cout << "    pushl %eax" << endl; 
+
+            Variable* varExpr = dynamic_cast<Variable*>(p->m_expr);
+            if (varExpr != nullptr)
+            {
+                Symbol* sym = m_st->lookup(p->m_expr->m_attribute.m_scope, varExpr->m_symname->spelling());
+                if (sym != nullptr && sym->m_basetype == bt_string)
+                {
+                    int stringLength = sym->m_string_size;
+                    cout << "    movl $" << stringLength << ", %eax" << endl;
+                    cout << "    pushl %eax" << endl; 
+                }
+            }
         }
         else
         {

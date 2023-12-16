@@ -1,8 +1,8 @@
 
 procedure Main() return char { 
     var a : string[100];
-
+    var i : integer;
     a = "apple";
-    
+    i = |a|;
     return 'c'; 
 }
