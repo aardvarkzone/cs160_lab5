@@ -600,21 +600,24 @@ class Codegen : public Visitor
 
     void visitPlus(Plus* p)
     {
-        cout << "# visit Plus" << endl; 
-        if (p->m_expr_1->m_attribute.m_basetype = bt_charptr) {
-            cout << "# charptr Plus" << endl; 
+        cout << "    # visit Plus" << endl; 
+        if (p->m_expr_1->m_attribute.m_basetype != bt_charptr) {
+            cout << "    popl  %ebx" << endl; 
+            cout << "    popl  %eax" << endl; 
+            cout << "    addl  %ebx, %eax" << endl; 
+            cout << "    pushl  %eax" << endl;
+        } 
+        else {
+            cout << "    # charptr Plus" << endl; 
             cout << "    popl  %ebx" << endl; 
             cout << "    popl  %eax" << endl; 
             cout << "    negl  %ebx" << endl; 
             cout << "    imull $4, %ebx" << endl;
             cout << "    addl %ebx, %eax" << endl;
             cout << "    pushl %eax" << endl;
-        } else {
-            cout << "    popl  %ebx" << endl; 
-            cout << "    popl  %eax" << endl; 
-            cout << "    addl  %ebx, %eax" << endl; 
-            cout << "    pushl  %eax" << endl;
         }
+
+
         
     }
 
@@ -632,12 +635,14 @@ class Codegen : public Visitor
     {
         p->visit_children(this); 
         cout << "    # Compiling /" << endl;
-        cout << "    popl  %ebx" << endl; 
+        cout << "    popl  %ebx" << endl;  
         cout << "    popl  %eax" << endl; 
-        cout << "    cdq  %ebx, %eax" << endl; 
-        cout << "    idiv  %ebx";
-        cout << "    pushl  %eax" << endl;
+
+        cout << "    cdq" << endl;  
+        cout << "    idiv  %ebx" << endl; 
+        cout << "    pushl  %eax" << endl;  
     }
+
 
     void visitNot(Not* p)
     {
@@ -665,8 +670,8 @@ class Codegen : public Visitor
         if (sym != NULL) {
             // int offset = sym->get_offset();
             int offset = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
-            cout << "    movl  " << -offset << "(%ebp), %eax" << endl;  
-            cout << "    pushl %eax" << endl;  
+            cout << "    movl  " << -offset << "(%ebp), %eax #move from ident" << endl;  
+            cout << "    pushl %eax #push" << endl;  
         } else { cout << "    #error!" << endl; }
     }
 

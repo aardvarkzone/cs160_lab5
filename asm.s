@@ -3,13 +3,11 @@
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $12, %esp
-    # visit VariableDecl
-    # visit VariableDecl
+    subl  $4, %esp
     # visit VariableDecl
     #visit Assignment
     #visit IntLit
-    pushl $4
+    pushl $2
     #visit Variable
     pushl $4 #offset from visitVar
     popl %eax #offset
@@ -18,20 +16,13 @@ Main:
     movl %ebx, (%ebp, %eax)
     # assign
     #visit Assignment
-    #visit IntLit
-    pushl $1
+    # visit Plus
+    popl  %ebx
+    popl  %eax
+    addl  %ebx, %eax
+    pushl  %eax
     #visit Variable
-    pushl $8 #offset from visitVar
-    popl %eax #offset
-    popl %ebx #value
-    negl %eax #offset
-    movl %ebx, (%ebp, %eax)
-    # assign
-    #visit Assignment
-    #visit IntLit
-    pushl $2
-    #visit Variable
-    pushl $12 #offset from visitVar
+    pushl $4 #offset from visitVar
     popl %eax #offset
     popl %ebx #value
     negl %eax #offset
@@ -39,8 +30,8 @@ Main:
     # assign
     # visit Return
     #visit Ident
-    movl  0(%ebp), %eax
-    pushl %eax
+    movl  -4(%ebp), %eax #move from ident
+    pushl %eax #push
     popl  %eax # for return
     leave
     # Epilogue

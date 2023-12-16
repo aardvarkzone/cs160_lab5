@@ -883,6 +883,8 @@ class Typecheck : public Visitor
         p->m_attribute.m_scope = m_st->get_scope();
         p->visit_children(this);
         checkset_variable(p);
+        p->m_attribute.m_basetype = m_st->lookup(p->m_symname->spelling())->m_basetype;
+
     }
 
     void visitDeref(Deref* p) {
