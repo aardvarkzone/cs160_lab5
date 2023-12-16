@@ -7,15 +7,16 @@
 Main:
     pushl %ebp
     movl  %esp, %ebp
-    subl  $404, %esp
+    subl  $48, %esp
+    # visit VariableDecl
     # visit VariableDecl
     # visit VariableDecl
     # visit StringAssignment
     #visit Variable
-    leal 0(%ebp), %eax
+    leal 4(%ebp), %eax
     pushl %eax
     .data
-str_label_0: .ascii "apple"
+str_label_0: .ascii "foobar"
     .text
     leal (%ebp), %edi
     addl %eax, %edi
@@ -28,16 +29,25 @@ label0:
     testl %eax, %eax
     jne label0
     #visit Assignment
-    # string input
-    #visit Variable
-    pushl $404 #offset from visitVar
+    pushl $97
+    # visit ArrayElement
+    # v1
+    leal 4(%ebp), %eax
+    #visit IntLit
+    pushl $0
+    popl %ecx
+    imull $4, %ecx
+    addl %ecx, %eax
+    pushl %eax
     popl %eax #offset
     popl %ebx #value
     negl %eax #offset
     movl %ebx, (%ebp, %eax)
     # assign
     # visit Return
-    pushl $99
+    #visit Ident
+    movl  -48(%ebp), %eax #move from ident
+    pushl %eax #push
     popl  %eax # for return
     leave
     # Epilogue

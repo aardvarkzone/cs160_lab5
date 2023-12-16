@@ -1,9 +1,10 @@
 
+
 procedure Main() return char { 
-    var a : string[100];
-    var i : integer;
-    a = "apple";
-    a = "f"
-    i = |a|;
-    return 'c'; 
+    var x : charptr;
+    var y : string[10];
+    var z : char;
+    y = "foobar";
+    y[0] = 'a'; 
+    return z; 
 }

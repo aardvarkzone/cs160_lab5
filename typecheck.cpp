@@ -346,6 +346,7 @@ class Typecheck : public Visitor
             t_error(array_index_error, p->m_attribute); 
         }
         p->m_attribute.m_basetype = bt_char;
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void check_array_element(ArrayElement* p)
@@ -360,6 +361,7 @@ class Typecheck : public Visitor
             t_error(array_index_error, p->m_attribute); 
         }
         p->m_attribute.m_basetype = bt_char;
+        p->m_attribute.m_scope = m_st->get_scope();
         
     }
 
@@ -548,6 +550,7 @@ class Typecheck : public Visitor
             p->m_attribute.m_basetype = s->m_basetype;
 
         }
+        
     }
 
 
@@ -645,12 +648,14 @@ class Typecheck : public Visitor
     {
         p->visit_children(this);
         check_assignment(p);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitStringAssignment(StringAssignment *p)
     {
         p->visit_children(this);
         check_string_assignment(p);
+        p->m_attribute.m_scope = m_st->get_scope();
         
     }
 
@@ -829,6 +834,7 @@ class Typecheck : public Visitor
     {
         p->visit_children(this);
         check_array_access(p);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     void visitIntLit(IntLit* p) {
@@ -873,12 +879,13 @@ class Typecheck : public Visitor
     void visitAbsoluteValue(AbsoluteValue* p) {
         p->visit_children(this);
         checkset_absolute_value(p, p->m_expr);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
 
     void visitAddressOf(AddressOf* p) {
         p->visit_children(this);
-
+        p->m_attribute.m_scope = m_st->get_scope();
         checkset_addressof(p, p->m_lhs);
     }
 
@@ -895,6 +902,7 @@ class Typecheck : public Visitor
     void visitDeref(Deref* p) {
         p->visit_children(this);
         checkset_deref_expr(p, p->m_expr); 
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
    void visitDerefVariable(DerefVariable* p) {
@@ -905,6 +913,7 @@ class Typecheck : public Visitor
     void visitArrayElement(ArrayElement* p) {
         p->visit_children(this);
         check_array_element(p);
+        p->m_attribute.m_scope = m_st->get_scope();
     }
 
     // Special cases

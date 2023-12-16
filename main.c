@@ -1,7 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 
-int Main(); 
+char Main(); 
 
 int main(int argc, char **argv) { 
     char res = Main(); 

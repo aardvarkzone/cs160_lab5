@@ -657,9 +657,22 @@ class Codegen : public Visitor
 
     void visitArrayAccess(ArrayAccess* p)
     {
-        p->visit_children(this);
+        cout << "    # visit ArrayAccess" << endl;
 
-        
+        // Symbol* sym = m_st->lookup(p->m_attribute2.m_scope, p->m_symname->spelling());
+        // cout << "# made it" << endl;
+        // int arrayBaseOffset = sym->get_offset();
+        // cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl;
+
+        // p->m_expr->accept(this); // This should push the index onto the stack
+
+        // cout << "    popl %ecx" << endl; 
+        // cout << "    imull $4, %ecx" << endl; 
+
+        // cout << "    addl %ecx, %eax" << endl;
+
+
+        // cout << "    pushl %eax" << endl;
     }
 
     // LHS
@@ -678,8 +691,6 @@ class Codegen : public Visitor
             int offset = sym->get_offset(); 
             cout << "    leal " << offset << "(%ebp), %eax" << endl;
             cout << "    pushl %eax" << endl;
-
-            
         }
     }
 
@@ -687,6 +698,7 @@ class Codegen : public Visitor
 
     void visitDerefVariable(DerefVariable* p)
     {
+
         p->visit_children(this);
         int offset  = 4 + m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling())->get_offset();
         cout << "    popl %eax" << endl;
@@ -697,10 +709,24 @@ class Codegen : public Visitor
 
     void visitArrayElement(ArrayElement* p)
     {
-        p->visit_children(this);
+        cout << "    # visit ArrayElement" << endl;
+
+        Symbol* sym = m_st->lookup(p->m_attribute.m_scope, p->m_symname->spelling());
+       
+        cout << "    # v1" << endl;
+        int arrayBaseOffset = sym->get_offset();
+        cout << "    leal " << arrayBaseOffset << "(%ebp), %eax" << endl; 
+
+        p->m_expr->accept(this); 
+
+        cout << "    popl %ecx" << endl; 
+        cout << "    imull $4, %ecx" << endl;
+        cout << "    addl %ecx, %eax" << endl;
+        cout << "    pushl %eax" << endl;
+    }
 
         
-    }
+    
 
     // Special cases
     void visitSymName(SymName* p)
@@ -752,39 +778,41 @@ class Codegen : public Visitor
     {
         if (p->m_expr->m_attribute.m_basetype == bt_string)
         {
-            cout << "    # string input" << endl;
+            // cout << "    # string input" << endl;
 
-            Variable* varExpr = dynamic_cast<Variable*>(p->m_expr);
-            if (varExpr != nullptr)
+            Ident* identexpr = dynamic_cast<Ident*>(p->m_expr);
+            Symbol* sym = m_st->lookup(p->m_expr->m_attribute.m_scope, identexpr->m_symname->spelling());
+            // cout << "    # made it to if" << endl; 
+            if (sym->m_basetype == bt_string)
             {
-                Symbol* sym = m_st->lookup(p->m_expr->m_attribute.m_scope, varExpr->m_symname->spelling());
-                if (sym != nullptr && sym->m_basetype == bt_string)
-                {
-                    int stringLength = sym->m_string_size;
-                    cout << "    movl $" << stringLength << ", %eax" << endl;
-                    cout << "    pushl %eax" << endl; 
-                }
+                // cout << "    # made it inside if" << endl; 
+                int stringLength = sym->m_string_size;
+                cout << "    pushl $" << stringLength << endl; 
+                // cout << "    popl %eax" << endl; 
             }
         }
         else
         {
             cout << "    # non-string input" << endl;
+            p->visit_children(this); 
             cout << "    popl  %eax" << endl;
 
             cout << "    cmpl  $0, %eax" << endl;
             int label_is_positive = new_label();
             int label_end = new_label();
             cout << "    jge   label" << label_is_positive << endl;
-
             cout << "    negl  %eax" << endl;
-
             cout << "    jmp   label" << label_end << endl;
-
             cout << "label" << label_is_positive << ":" << endl;
-
             cout << "label" << label_end << ":" << endl;
-
             cout << "    pushl %eax" << endl;
+            // cout << "    " << endl;
+            // cout << "    " << endl;
+            // cout << "    " << endl;
+
+            // mov ebx, eax 
+            // neg eax
+            // cmovl eax, ebx 
         }
     }
         
@@ -802,7 +830,12 @@ class Codegen : public Visitor
 
     void visitDeref(Deref* p)
     {
-        p->visit_children(this); 
+        cout << "    # visit Deref" << endl;
+
+        p->m_expr->accept(this);
+        cout << "    popl %eax" << endl;  
+        cout << "    movl (%eax), %eax" << endl;
+        cout << "    pushl %eax" << endl;
     }
 };
 
